@@ -111,7 +111,7 @@ var MjpegProxy = exports.MjpegProxy = function(mjpegUrl) {
     
     mjpegResponse.on('end', function () {
       console.log("cam cut connection, restarting...");
-      self._startRequest(req, res)
+      setTimeout(() => self._startRequest(req, res), 2000);
     });
 
     mjpegResponse.on('close', function () {
