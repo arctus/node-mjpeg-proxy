@@ -68,10 +68,13 @@ var MjpegProxy = exports.MjpegProxy = function(mjpegUrl) {
   }
 
   self._requestResponse = function(mjpegResponse, req, res) {
+    // console.log('request');
     self.globalMjpegResponse = mjpegResponse;
     self.boundary = extractBoundary(mjpegResponse.headers['content-type']);
 
-    self._newClient(req, res);
+    if (req && res) {
+      self._newClient(req, res);
+    }
 
     var lastByte1 = null;
     var lastByte2 = null;
@@ -108,10 +111,10 @@ var MjpegProxy = exports.MjpegProxy = function(mjpegUrl) {
         }
       }
     });
-    
+
     mjpegResponse.on('end', function () {
       console.log("cam cut connection, restarting...");
-      setTimeout(() => self._startRequest(req, res), 2000);
+      self._startRequest()
     });
 
     mjpegResponse.on('close', function () {
@@ -134,10 +137,13 @@ var MjpegProxy = exports.MjpegProxy = function(mjpegUrl) {
       'Pragma': 'no-cache',
       'Content-Type': 'multipart/x-mixed-replace;boundary=' + self.boundary
     });
+    console.log('New client', req, res)
     self.audienceResponses.push(res);
     self.newAudienceResponses.push(res);
 
     res.socket.on('close', function () {
+      // console.log('exiting client!');
+
       self.audienceResponses.splice(self.audienceResponses.indexOf(res), 1);
       if (self.newAudienceResponses.indexOf(res) >= 0) {
         self.newAudienceResponses.splice(self.newAudienceResponses.indexOf(res), 1); // remove from new
